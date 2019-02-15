@@ -60,5 +60,37 @@ var getEth = function(res,web3, configPath,logger,from) {
         }
     });
 };
+
+var signEth = function (res, web3, configPath, logger, from, to, value, privatekey) {
+
+    var config = JSON.parse(fs.readFileSync(configPath));
+    var tx = {
+        from: from,
+        to: to,
+        value: web3.utils.toWei(value, "ether"),
+        // gasPrice:1000000000,
+        gas: 1000000,
+    };
+    web3.eth.accounts.signTransaction(tx, privatekey, false).then((signed) => {
+        logger.debug(util.format('==== signed:"%s"', signed));
+        logger.debug(util.format('==== signed.rawTransaction:"%s"', signed.rawTransaction));
+
+        var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+        tran.on('confirmation', (confirmationNumber, receipt) => {
+            logger.debug(util.format('==== confirmationNumber:"%s"', confirmationNumber));
+            logger.debug(util.format('==== receipt result:"%s"', receipt));
+        });
+        tran.on('transactionHash', hash => {
+            logger.debug(util.format('==== transactionHash:"%s"', hash));
+        });
+        tran.on('receipt', receipt => {
+            logger.debug(util.format('==== receipt:"%s"', receipt));
+        });
+    }, (err) => {
+        logger.error(util.format(' Err: "%s"', err));
+    });
+};
+
 exports.sentEth = sentEth;
 exports.getEth = getEth;
+exports.signEth = signEth;

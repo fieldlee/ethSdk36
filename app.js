@@ -169,6 +169,42 @@ app.post('/contractsend', function (req, res) {
 	contract.transferContract(res,configPath,logger,from,to,value,contractaddr);
 });
 
+app.post('/contractsendkey', function (req, res) {
+	var from;
+	var to;
+	var value ;
+	var contractaddr;
+	var key;
+	if (req.body.from){
+		from = req.body.from;
+	}else{
+		res.status(500).json({error:'请输入转出账号地址...'});
+		return;
+	}
+	if (req.body.to){
+		to = req.body.to;
+	}else{
+		res.status(500).json({error:'请输入转入账号地址...'});
+		return;
+	}
+	if (req.body.value){
+		value = req.body.value;
+	}else{
+		res.status(500).json({error:'请输入value...'});
+		return;
+	}
+	if (req.body.key){
+		key = req.body.key;
+	}else{
+		res.status(500).json({error:'请输入私钥...'});
+		return;
+	}
+	if (req.body.contract){
+		contractaddr = req.body.contract;
+	}
+	contract.transferContractKey(res,configPath,logger,from,to,value,contractaddr,key);
+});
+
 app.post('/contractget', function (req, res) {
 	var addr;
 	var contractaddr;

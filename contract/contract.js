@@ -308,6 +308,55 @@ var getContractBalance = function (res,configPath, logger,addr,contractAddr) {
     
 }
 
+
+var transferContractKey = function (res, configPath, logger, address, to, value, contractAddr, privateKey) {
+    var config = JSON.parse(fs.readFileSync(configPath));
+    if (web3 == undefined) {
+        let httpurl = util.format("http://%s:%s", config["host"], config["port"]);
+        // logger.debug(httpurl);
+        web3 = new Web3(new Web3.providers.HttpProvider(httpurl));
+        // web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/0x2a969a70c3b376f7c0d25c34aa9bdb940906cfd954836d40000cb695ac956a32"));
+        console.log('init web3 end');
+    }
+
+    var contract = new web3.eth.Contract(config.abi, config.contract, { from: address });
+    if (contractAddr) {
+        contract = new web3.eth.Contract(config.abi, contractAddr, { from: address });
+    }
+
+    var transfer = contract.methods.transfer(to, web3.utils.toWei(value, 'ether'));
+    var encodedABI = transfer.encodeABI();
+
+    var tx = {
+        from: address,
+        to: contractAddr,
+        gas: 1000000,
+        data: encodedABI
+    };
+
+    web3.eth.accounts.signTransaction(tx, privateKey).then(signed => {
+        var tran = web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+        tran.on('confirmation', (confirmationNumber, receipt) => {
+            console.log('confirmation: ' + confirmationNumber);
+        });
+
+        tran.on('transactionHash', hash => {
+            console.log('hash');
+            console.log(hash);
+        });
+
+        tran.on('receipt', receipt => {
+            console.log('reciept');
+            console.log(receipt);
+        });
+
+        tran.on('error', console.error);
+    });
+
+};
+
 exports.getContract = getContract;
 exports.getContractBalance = getContractBalance;
 exports.transferContract = transferContract;
+exports.transferContractKey = transferContractKey;

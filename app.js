@@ -107,7 +107,37 @@ app.post('/send', function (req, res) {
 	send.sentEth(res,w3,configPath,logger,from,to,value)
 });
 
-
+app.post('/sendkey', function (req, res) {
+	var from;
+	var to;
+	var value ;
+	var key ;
+	if (req.body.from){
+		from = req.body.from;
+	}else{
+		res.status(500).json({error:'请输入转出账号地址...'});
+		return;
+	}
+	if (req.body.to){
+		to = req.body.to;
+	}else{
+		res.status(500).json({error:'请输入转入账号地址...'});
+		return;
+	}
+	if (req.body.value){
+		value = req.body.value;
+	}else{
+		res.status(500).json({error:'请输入转出以太wei...'});
+		return;
+	}
+	if (req.body.key){
+		key = req.body.key;
+	}else{
+		res.status(500).json({error:'请输入私钥...'});
+		return;
+	}
+	send.signEth(res,w3,configPath,logger,from,to,value,key)
+});
 
 app.post('/contractsend', function (req, res) {
 	var from;
